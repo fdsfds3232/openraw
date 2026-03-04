@@ -128,11 +128,8 @@ jobs:
     name: Install Script Smoke Test
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch and syntax-check shell installer
-        run: |
-          curl -fsSL https://openraw.sh/install -o /tmp/install.sh
-          bash -n /tmp/install.sh
-      - name: Fetch and syntax-check PowerShell installer
-        run: |
-          curl -fsSL https://openraw.sh/install.ps1 -o /tmp/install.ps1
-          pwsh -NoProfile -Command "Get-Content /tmp/install.ps1 | Out-Null" 2>&1 || true
+      - uses: actions/checkout@v4
+      - name: Syntax-check shell installer
+        run: bash -n install.sh
+      - name: Syntax-check PowerShell installer
+        run: pwsh -NoProfile -Command "Get-Content install.ps1 | Out-Null"
