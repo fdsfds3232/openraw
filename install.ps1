@@ -59,13 +59,20 @@ function Get-LatestVersion {
 
     Write-Host "  Fetching latest release..."
     try {
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest"
+        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -ErrorAction Stop
+        if (-not $release -or -not $release.tag_name) {
+            throw "No release found"
+        }
         return $release.tag_name
     }
     catch {
-        Write-Host "  Could not determine latest version." -ForegroundColor Red
-        Write-Host "  Install from source instead:" -ForegroundColor DarkGray
-        Write-Host "    cargo install --git https://github.com/$Repo openraw-cli"
+        Write-Host ""
+        Write-Host "  No release found for $Repo" -ForegroundColor Red
+        Write-Host "  The project may not have published releases yet." -ForegroundColor DarkGray
+        Write-Host ""
+        Write-Host "  Install from source (requires Rust):" -ForegroundColor White
+        Write-Host "    cargo install --git https://github.com/$Repo openraw-cli" -ForegroundColor Cyan
+        Write-Host ""
         exit 1
     }
 }

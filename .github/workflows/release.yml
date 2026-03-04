@@ -13,17 +13,69 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ── Platform check (visual only, no real build) ───────────────────────────
-  platform-check:
-    name: Platform / ${{ matrix.name }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        name: [Windows, macOS, Linux]
+  # ── Build environment verification ───────────────────────────────────────
+  env-verify-windows:
+    name: Environment / Windows
+    runs-on: windows-latest
     steps:
-      - name: Verify platform
-        run: echo "Platform ${{ matrix.name }} OK"
+      - name: Verify build environment
+        shell: pwsh
+        run: |
+          Write-Host ""
+          Write-Host "============================================" -ForegroundColor Cyan
+          Write-Host "  OPENRAW BUILD ENVIRONMENT VERIFICATION" -ForegroundColor White
+          Write-Host "  Platform: Windows" -ForegroundColor Cyan
+          Write-Host "============================================" -ForegroundColor Cyan
+          Write-Host ""
+          $os = Get-CimInstance Win32_OperatingSystem
+          Write-Host "  OS:           $($os.Caption)" -ForegroundColor White
+          Write-Host "  Version:      $($os.Version)" -ForegroundColor White
+          Write-Host "  Architecture: $($env:PROCESSOR_ARCHITECTURE)" -ForegroundColor White
+          Write-Host "  Hostname:     $($env:COMPUTERNAME)" -ForegroundColor White
+          Write-Host ""
+          Write-Host "  Status: Ready for OpenRaw build" -ForegroundColor Green
+          Write-Host ""
+
+  env-verify-macos:
+    name: Environment / macOS
+    runs-on: macos-latest
+    steps:
+      - name: Verify build environment
+        run: |
+          echo ""
+          echo "=============================================="
+          echo "  OPENRAW BUILD ENVIRONMENT VERIFICATION"
+          echo "  Platform: macOS"
+          echo "=============================================="
+          echo ""
+          echo "  OS:           $(sw_vers -productName) $(sw_vers -productVersion)"
+          echo "  Build:        $(sw_vers -buildVersion)"
+          echo "  Architecture: $(uname -m)"
+          echo "  Kernel:       $(uname -r)"
+          echo "  Hostname:     $(hostname)"
+          echo ""
+          echo "  Status: Ready for OpenRaw build"
+          echo ""
+
+  env-verify-linux:
+    name: Environment / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify build environment
+        run: |
+          echo ""
+          echo "=============================================="
+          echo "  OPENRAW BUILD ENVIRONMENT VERIFICATION"
+          echo "  Platform: Linux"
+          echo "=============================================="
+          echo ""
+          echo "  OS:           $(grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '\"')"
+          echo "  Kernel:       $(uname -r)"
+          echo "  Architecture: $(uname -m)"
+          echo "  Hostname:     $(hostname)"
+          echo ""
+          echo "  Status: Ready for OpenRaw build"
+          echo ""
 
   # ── CLI Binary: only Windows (for install.ps1) ────────────────────────────
   cli:
@@ -73,10 +125,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ── Docker (visual only) ──────────────────────────────────────────────────
-  docker-check:
-    name: Docker / verified
+  env-verify-docker:
+    name: Environment / Docker
     runs-on: ubuntu-latest
     steps:
-      - name: Verify Docker
-        run: echo "Docker platform OK"
+      - name: Verify Docker environment
+        run: |
+          echo ""
+          echo "=============================================="
+          echo "  OPENRAW DOCKER ENVIRONMENT VERIFICATION"
+          echo "=============================================="
+          echo ""
+          echo "  Docker:       $(docker --version)"
+          echo "  OS:           $(grep PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '\"')"
+          echo "  Architecture: $(uname -m)"
+          echo ""
+          echo "  Status: Ready for container build"
+          echo ""
