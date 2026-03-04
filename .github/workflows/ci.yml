@@ -40,6 +40,7 @@ jobs:
   test:
     name: Test / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -60,8 +61,17 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf
-      # Tests that need a display (Tauri) are skipped in headless CI via cfg
-      - run: cargo test --workspace
+      # On Linux: skip openraw-desktop (heavy Tauri/GTK) to avoid runner shutdown; desktop has no tests
+      - name: Run tests (Linux, faster)
+        if: runner.os == 'Linux'
+        run: |
+          cargo test -p openraw-types -p openraw-memory -p openraw-runtime -p openraw-wire \
+            -p openraw-api -p openraw-kernel -p openraw-cli -p openraw-channels \
+            -p openraw-migrate -p openraw-skills -p openraw-hands -p openraw-extensions -p xtask
+      # macOS/Windows: full workspace
+      - name: Run tests (macOS/Windows)
+        if: runner.os != 'Linux'
+        run: cargo test --workspace
 
   clippy:
     name: Clippy
