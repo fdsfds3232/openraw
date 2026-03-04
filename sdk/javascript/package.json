@@ -1,0 +1,17 @@
+{
+  "name": "@openraw/sdk",
+  "version": "0.1.0",
+  "description": "Official JavaScript/TypeScript client for the OpenRaw Agent OS REST API",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "keywords": ["openraw", "agent", "ai", "llm", "sdk"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openraw/openraw"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": ["index.js", "index.d.ts"]
+}

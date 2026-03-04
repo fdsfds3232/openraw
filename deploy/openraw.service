@@ -1,0 +1,38 @@
+[Unit]
+Description=OpenRaw Agent OS Daemon
+Documentation=https://github.com/RightNow-AI/openraw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openraw
+Group=openraw
+ExecStart=/usr/local/bin/openraw start
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Environment
+EnvironmentFile=-/etc/openraw/env
+WorkingDirectory=/var/lib/openraw
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/openraw
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+MemoryDenyWriteExecute=false
+RestrictRealtime=true
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+[Install]
+WantedBy=multi-user.target
