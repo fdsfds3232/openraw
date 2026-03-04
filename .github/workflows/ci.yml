@@ -15,30 +15,20 @@ env:
   RUSTFLAGS: "-D warnings"
 
 jobs:
-  # ── Rust library crates (all 3 platforms) ──────────────────────────────────
+  # ── Rust library crates (macOS + Windows only; Ubuntu dropped: runner OOM) ─
   check:
     name: Check / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
           key: check-${{ matrix.os }}
-      - name: Install Tauri system deps (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf
       - run: cargo check --workspace
 
   test:
@@ -48,42 +38,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
           key: test-${{ matrix.os }}
-      - name: Install Tauri system deps (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf
-      # On Linux: skip openraw-desktop (heavy Tauri/GTK); split tests to avoid runner OOM/shutdown
-      - name: Run tests (Linux) — Part 1
-        if: runner.os == 'Linux'
-        env:
-          CARGO_TEST_THREADS: 2
-        run: |
-          cargo test -p openraw-types -p openraw-memory -p openraw-wire -p openraw-api \
-            -p openraw-kernel -p openraw-cli
-      - name: Run tests (Linux) — Part 2
-        if: runner.os == 'Linux'
-        env:
-          CARGO_TEST_THREADS: 2
-        run: |
-          cargo test -p openraw-runtime -p openraw-channels -p openraw-migrate -p openraw-skills \
-            -p openraw-hands -p openraw-extensions -p xtask
-      # macOS/Windows: full workspace
-      - name: Run tests (macOS/Windows)
-        if: runner.os != 'Linux'
-        run: cargo test --workspace
+      - run: cargo test --workspace
 
   clippy:
     name: Clippy
