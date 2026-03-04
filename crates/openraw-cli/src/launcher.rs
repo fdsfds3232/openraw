@@ -542,6 +542,7 @@ fn render_separator(frame: &mut ratatui::Frame, area: Rect) {
 }
 
 // ── Desktop app launcher ────────────────────────────────────────────────────
+// No pre-built desktop in release — build from source: cargo install openraw-desktop
 
 pub fn launch_desktop_app() {
     let desktop_bin = {
@@ -553,9 +554,7 @@ pub fn launch_desktop_app() {
         #[cfg(not(windows))]
         let name = "openraw-desktop";
 
-        // Check sibling of current exe first
         let sibling = dir.map(|d| d.join(name));
-
         match sibling {
             Some(ref path) if path.exists() => sibling,
             _ => which_lookup(name),
@@ -564,27 +563,24 @@ pub fn launch_desktop_app() {
 
     match desktop_bin {
         Some(ref path) if path.exists() => {
-            match std::process::Command::new(path)
+            if let Err(e) = std::process::Command::new(path)
                 .stdin(std::process::Stdio::null())
                 .stdout(std::process::Stdio::null())
                 .stderr(std::process::Stdio::null())
                 .spawn()
             {
-                Ok(_) => {
-                    ui::success("Desktop app launched.");
-                }
-                Err(e) => {
-                    ui::error_with_fix(
-                        &format!("Failed to launch desktop app: {e}"),
-                        "Build it: cargo build -p openraw-desktop",
-                    );
-                }
+                ui::error_with_fix(
+                    &format!("Failed to launch desktop app: {e}"),
+                    "Build: cargo install openraw-desktop",
+                );
+            } else {
+                ui::success("Desktop app launched.");
             }
         }
         _ => {
             ui::error_with_fix(
                 "Desktop app not found",
-                "Build it: cargo build -p openraw-desktop",
+                "Build from source: cargo install openraw-desktop",
             );
         }
     }

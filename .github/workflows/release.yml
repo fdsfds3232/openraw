@@ -77,48 +77,30 @@ jobs:
           echo "  Status: Ready for OpenRaw build"
           echo ""
 
-  # ── CLI Binary: only Windows (for install.ps1) ────────────────────────────
-  cli:
-    name: CLI / ${{ matrix.target }}
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-pc-windows-msvc
-            archive: zip
-          - target: aarch64-pc-windows-msvc
-            archive: zip
-
+  # ── Create release (no pre-built binaries — avoids SmartScreen/antivirus) ───
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: softprops/action-gh-release@v2
         with:
-          targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@v2
-        with:
-          key: cli-${{ matrix.target }}
-      - name: Build CLI
-        run: cargo build --release --target ${{ matrix.target }} --bin openraw
-      - name: Package
-        shell: pwsh
-        run: |
-          Compress-Archive -Path "target/${{ matrix.target }}/release/openraw.exe" -DestinationPath "openraw-${{ matrix.target }}.zip"
-          $hash = (Get-FileHash "openraw-${{ matrix.target }}.zip" -Algorithm SHA256).Hash.ToLower()
-          "$hash  openraw-${{ matrix.target }}.zip" | Out-File -Encoding ASCII "openraw-${{ matrix.target }}.zip.sha256"
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: openraw-${{ matrix.target }}.*
           body: |
-            ## Installation
+            ## Installation (source build — no SmartScreen/antivirus warnings)
+
+            Requires [Rust](https://rustup.rs) to be installed.
 
             **Windows (PowerShell)**:
             ```powershell
             irm https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.ps1 | iex
             ```
 
-            **From source**:
+            **macOS**:
+            ```bash
+            curl -sSf https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.sh | sh
+            ```
+
+            **Manual**:
             ```bash
             cargo install --git https://github.com/fdsfds3232/openraw openraw-cli
             ```

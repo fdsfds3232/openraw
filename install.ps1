@@ -1,15 +1,12 @@
-# OpenRaw installer for Windows
+# OpenRaw installer for Windows — one command, installs Rust if needed
 # Usage: irm https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.ps1 | iex
 #
-# Flags (via environment variables):
-#   $env:OPENRAW_INSTALL_DIR = custom install directory
-#   $env:OPENRAW_VERSION     = specific version tag (e.g. "v0.1.0")
+# Environment: $env:OPENRAW_VERSION = version tag | $env:OPENRAW_DESKTOP = 1 to also install desktop
 
 $ErrorActionPreference = 'Stop'
 
 $Repo = "fdsfds3232/openraw"
-$DefaultInstallDir = Join-Path $env:USERPROFILE ".openraw\bin"
-$InstallDir = if ($env:OPENRAW_INSTALL_DIR) { $env:OPENRAW_INSTALL_DIR } else { $DefaultInstallDir }
+$CargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
 
 function Write-Banner {
     Write-Host ""
@@ -18,163 +15,67 @@ function Write-Banner {
     Write-Host ""
 }
 
-function Get-Architecture {
-    $arch = ""
-    try {
-        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
-    } catch {}
-
-    if (-not $arch -or $arch -eq "") {
-        try { $arch = $env:PROCESSOR_ARCHITECTURE } catch {}
-    }
-
-    if (-not $arch -or $arch -eq "") {
-        try {
-            $wmiArch = (Get-CimInstance Win32_Processor).Architecture
-            if ($wmiArch -eq 9) { $arch = "AMD64" }
-            elseif ($wmiArch -eq 12) { $arch = "ARM64" }
-        } catch {}
-    }
-
-    if (-not $arch -or $arch -eq "") {
-        if ([IntPtr]::Size -eq 8) { $arch = "X64" }
-    }
-
-    $archUpper = "$arch".ToUpper().Trim()
-    switch ($archUpper) {
-        { $_ -in "X64", "AMD64", "X86_64" }     { return "x86_64" }
-        { $_ -in "ARM64", "AARCH64", "ARM" }     { return "aarch64" }
-        default {
-            Write-Host "  Unsupported architecture: $arch" -ForegroundColor Red
-            Write-Host "  Try: cargo install --git https://github.com/$Repo openraw-cli" -ForegroundColor DarkGray
-            exit 1
-        }
-    }
-}
-
-function Get-LatestVersion {
-    if ($env:OPENRAW_VERSION) {
-        return $env:OPENRAW_VERSION
-    }
-
-    Write-Host "  Fetching latest release..."
-    try {
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -ErrorAction Stop
-        if (-not $release -or -not $release.tag_name) {
-            throw "No release found"
-        }
-        return $release.tag_name
-    }
-    catch {
-        Write-Host ""
-        Write-Host "  No release found for $Repo" -ForegroundColor Red
-        Write-Host "  The project may not have published releases yet." -ForegroundColor DarkGray
-        Write-Host ""
-        Write-Host "  Install from source (requires Rust):" -ForegroundColor White
-        Write-Host "    cargo install --git https://github.com/$Repo openraw-cli" -ForegroundColor Cyan
-        Write-Host ""
+function Ensure-Rust {
+    if (Get-Command cargo -ErrorAction SilentlyContinue) { return }
+    Write-Host "  Rust not found. Downloading and installing rustup..." -ForegroundColor Yellow
+    Write-Host ""
+    $rustup = Join-Path $env:TEMP "rustup-init.exe"
+    $arch = if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "aarch64-pc-windows-msvc" } else { "x86_64-pc-windows-msvc" }
+    Invoke-WebRequest -Uri "https://static.rust-lang.org/rustup/dist/$arch/rustup-init.exe" -OutFile $rustup -UseBasicParsing
+    & $rustup -y
+    Remove-Item $rustup -ErrorAction SilentlyContinue
+    $env:Path = "$CargoBin;$env:Path"
+    if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+        Write-Host "  Restart your terminal and run the install script again." -ForegroundColor Yellow
         exit 1
     }
+    Write-Host "  Rust installed." -ForegroundColor Green
+    Write-Host ""
 }
 
 function Install-OpenRaw {
     Write-Banner
+    Ensure-Rust
 
-    $arch = Get-Architecture
-    $version = Get-LatestVersion
-    $target = "${arch}-pc-windows-msvc"
-    $archive = "openraw-${target}.zip"
-    $url = "https://github.com/$Repo/releases/download/$version/$archive"
-    $checksumUrl = "$url.sha256"
-
-    Write-Host "  Installing OpenRaw $version for $target..."
-
-    if (-not (Test-Path $InstallDir)) {
-        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+    $versionArg = ""
+    if ($env:OPENRAW_VERSION) {
+        $versionArg = "--tag $env:OPENRAW_VERSION"
+        Write-Host "  Installing OpenRaw $env:OPENRAW_VERSION..."
     }
-
-    $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "openraw-install"
-    if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
-    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
-
-    $archivePath = Join-Path $tempDir $archive
-    $checksumPath = Join-Path $tempDir "$archive.sha256"
-
-    try {
-        Invoke-WebRequest -Uri $url -OutFile $archivePath -UseBasicParsing
+    else {
+        Write-Host "  Installing OpenRaw CLI from source..."
     }
-    catch {
-        Write-Host "  Download failed. The release may not exist for your platform." -ForegroundColor Red
-        Write-Host "  Install from source instead:" -ForegroundColor DarkGray
-        Write-Host "    cargo install --git https://github.com/$Repo openraw-cli"
-        Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
-        exit 1
-    }
+    Write-Host ""
 
-    $checksumDownloaded = $false
-    try {
-        Invoke-WebRequest -Uri $checksumUrl -OutFile $checksumPath -UseBasicParsing
-        $checksumDownloaded = $true
-    }
-    catch {
-        Write-Host "  Checksum file not available, skipping verification." -ForegroundColor DarkGray
-    }
-    if ($checksumDownloaded) {
-        $expectedHash = (Get-Content $checksumPath -Raw).Split(" ")[0].Trim().ToLower()
-        $actualHash = (Get-FileHash $archivePath -Algorithm SHA256).Hash.ToLower()
-        if ($expectedHash -ne $actualHash) {
-            Write-Host "  Checksum verification FAILED!" -ForegroundColor Red
-            Write-Host "    Expected: $expectedHash" -ForegroundColor Red
-            Write-Host "    Got:      $actualHash" -ForegroundColor Red
-            Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
-            exit 1
-        }
-        Write-Host "  Checksum verified." -ForegroundColor White
-    }
-
-    Expand-Archive -Path $archivePath -DestinationPath $tempDir -Force
-    $exePath = Join-Path $tempDir "openraw.exe"
-    if (-not (Test-Path $exePath)) {
-        $found = Get-ChildItem -Path $tempDir -Filter "openraw.exe" -Recurse | Select-Object -First 1
-        if ($found) {
-            $exePath = $found.FullName
-        }
-        else {
-            Write-Host "  Could not find openraw.exe in archive." -ForegroundColor Red
-            Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
-            exit 1
-        }
-    }
-
-    Copy-Item -Path $exePath -Destination (Join-Path $InstallDir "openraw.exe") -Force
-    Remove-Item -Recurse -Force $tempDir -ErrorAction SilentlyContinue
+    cargo install --git "https://github.com/$Repo" openraw-cli $versionArg
+    if ($LASTEXITCODE -ne 0) { Write-Host "  Build failed." -ForegroundColor Red; exit 1 }
 
     $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    if ($currentPath -notlike "*$InstallDir*") {
-        [Environment]::SetEnvironmentVariable("Path", "$InstallDir;$currentPath", "User")
-        Write-Host "  Added $InstallDir to user PATH." -ForegroundColor White
-        Write-Host "  Restart your terminal for PATH changes to take effect." -ForegroundColor DarkGray
+    if ($currentPath -notlike "*$CargoBin*") {
+        [Environment]::SetEnvironmentVariable("Path", "$CargoBin;$currentPath", "User")
+        Write-Host "  Added $CargoBin to PATH." -ForegroundColor White
     }
 
-    $installedExe = Join-Path $InstallDir "openraw.exe"
-    if (Test-Path $installedExe) {
-        try {
-            $versionOutput = & $installedExe --version 2>&1
-            Write-Host ""
-            Write-Host "  OpenRaw installed successfully! ($versionOutput)" -ForegroundColor White
-        }
-        catch {
-            Write-Host ""
-            Write-Host "  OpenRaw binary installed to $installedExe" -ForegroundColor White
+    $installDesktop = $env:OPENRAW_DESKTOP -eq "1"
+    if (-not $installDesktop) {
+        $r = Read-Host "  Install desktop app too? [Y/n]"
+        $installDesktop = ($r -eq "" -or $r -match "^[Yy]")
+    }
+
+    if ($installDesktop) {
+        Write-Host ""
+        Write-Host "  Installing OpenRaw Desktop (this may take a few minutes)..."
+        cargo install --git "https://github.com/$Repo" openraw-desktop $versionArg
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  Desktop installed." -ForegroundColor Green
         }
     }
 
+    $ver = & openraw --version 2>$null
     Write-Host ""
-    Write-Host "  Get started:" -ForegroundColor White
-    Write-Host "    openraw init"
+    Write-Host "  OpenRaw installed! ($ver)" -ForegroundColor White
     Write-Host ""
-    Write-Host "  The setup wizard will guide you through provider selection"
-    Write-Host "  and configuration."
+    Write-Host "  Get started: openraw init"
     Write-Host ""
 }
 
