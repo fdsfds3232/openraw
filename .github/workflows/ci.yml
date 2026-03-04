@@ -65,15 +65,21 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf
-      # On Linux: skip openraw-desktop (heavy Tauri/GTK); limit test threads to avoid OOM
-      - name: Run tests (Linux)
+      # On Linux: skip openraw-desktop (heavy Tauri/GTK); split tests to avoid runner OOM/shutdown
+      - name: Run tests (Linux) — Part 1
         if: runner.os == 'Linux'
         env:
           CARGO_TEST_THREADS: 2
         run: |
-          cargo test -p openraw-types -p openraw-memory -p openraw-runtime -p openraw-wire \
-            -p openraw-api -p openraw-kernel -p openraw-cli -p openraw-channels \
-            -p openraw-migrate -p openraw-skills -p openraw-hands -p openraw-extensions -p xtask
+          cargo test -p openraw-types -p openraw-memory -p openraw-wire -p openraw-api \
+            -p openraw-kernel -p openraw-cli
+      - name: Run tests (Linux) — Part 2
+        if: runner.os == 'Linux'
+        env:
+          CARGO_TEST_THREADS: 2
+        run: |
+          cargo test -p openraw-runtime -p openraw-channels -p openraw-migrate -p openraw-skills \
+            -p openraw-hands -p openraw-extensions -p xtask
       # macOS/Windows: full workspace
       - name: Run tests (macOS/Windows)
         if: runner.os != 'Linux'
