@@ -4,9 +4,7 @@
 
 use chrono::Utc;
 use openraw_types::error::{OpenRawError, OpenRawResult};
-use openraw_types::memory::{
-    Entity, EntityType, GraphMatch, GraphPattern, Relation, RelationType,
-};
+use openraw_types::memory::{Entity, EntityType, GraphMatch, GraphPattern, Relation, RelationType};
 use rusqlite::Connection;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};

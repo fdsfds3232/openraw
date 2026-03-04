@@ -43,12 +43,7 @@ impl StructuredStore {
     }
 
     /// Set a value in the key-value store.
-    pub fn set(
-        &self,
-        agent_id: AgentId,
-        key: &str,
-        value: serde_json::Value,
-    ) -> OpenRawResult<()> {
+    pub fn set(&self, agent_id: AgentId, key: &str, value: serde_json::Value) -> OpenRawResult<()> {
         let conn = self
             .conn
             .lock()
@@ -99,13 +94,12 @@ impl StructuredStore {
         let mut pairs = Vec::new();
         for row in rows {
             let (key, blob) = row.map_err(|e| OpenRawError::Memory(e.to_string()))?;
-            let value: serde_json::Value = serde_json::from_slice(&blob)
-                .unwrap_or_else(|_| {
-                    // Fallback: try as UTF-8 string
-                    String::from_utf8(blob)
-                        .map(serde_json::Value::String)
-                        .unwrap_or(serde_json::Value::Null)
-                });
+            let value: serde_json::Value = serde_json::from_slice(&blob).unwrap_or_else(|_| {
+                // Fallback: try as UTF-8 string
+                String::from_utf8(blob)
+                    .map(serde_json::Value::String)
+                    .unwrap_or(serde_json::Value::Null)
+            });
             pairs.push((key, value));
         }
         Ok(pairs)
@@ -293,8 +287,7 @@ impl StructuredStore {
                 continue;
             }
 
-            let agent_id = match uuid::Uuid::parse_str(&id_str).map(openraw_types::agent::AgentId)
-            {
+            let agent_id = match uuid::Uuid::parse_str(&id_str).map(openraw_types::agent::AgentId) {
                 Ok(id) => id,
                 Err(e) => {
                     tracing::warn!(agent = %name, "Skipping agent with bad UUID '{id_str}': {e}");

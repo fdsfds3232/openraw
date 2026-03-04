@@ -11,9 +11,7 @@
 use crate::llm_driver::{CompletionRequest, CompletionResponse, LlmDriver, LlmError, StreamEvent};
 use async_trait::async_trait;
 use futures::StreamExt;
-use openraw_types::message::{
-    ContentBlock, Message, MessageContent, Role, StopReason, TokenUsage,
-};
+use openraw_types::message::{ContentBlock, Message, MessageContent, Role, StopReason, TokenUsage};
 use openraw_types::tool::ToolCall;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
@@ -334,10 +332,7 @@ fn convert_response(resp: GeminiResponse) -> Result<CompletionResponse, LlmError
             }
         }
         None => {
-            let reason = candidate
-                .finish_reason
-                .as_deref()
-                .unwrap_or("unknown");
+            let reason = candidate.finish_reason.as_deref().unwrap_or("unknown");
             warn!(finish_reason = %reason, "Gemini returned candidate with no content");
             return Err(LlmError::Parse(format!(
                 "Gemini returned empty response (finish_reason: {reason})"

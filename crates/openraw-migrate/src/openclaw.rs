@@ -2655,7 +2655,9 @@ fn parse_legacy_channels(
                 report.skipped.push(SkippedItem {
                     kind: ItemKind::Channel,
                     name: "bluebubbles".to_string(),
-                    reason: "No OpenRaw adapter available — consider using the iMessage channel instead".to_string(),
+                    reason:
+                        "No OpenRaw adapter available — consider using the iMessage channel instead"
+                            .to_string(),
                 });
             }
             _ => {}

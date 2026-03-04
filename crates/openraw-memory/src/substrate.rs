@@ -57,8 +57,7 @@ impl MemorySubstrate {
 
     /// Create an in-memory substrate (for testing).
     pub fn open_in_memory(decay_rate: f32) -> OpenRawResult<Self> {
-        let conn =
-            Connection::open_in_memory().map_err(|e| OpenRawError::Memory(e.to_string()))?;
+        let conn = Connection::open_in_memory().map_err(|e| OpenRawError::Memory(e.to_string()))?;
         run_migrations(&conn).map_err(|e| OpenRawError::Memory(e.to_string()))?;
         let shared = Arc::new(Mutex::new(conn));
 
