@@ -1,5 +1,5 @@
 # OpenRaw installer for Windows
-# Usage: irm https://raw.githubusercontent.com/your-username/openraw/main/install.ps1 | iex
+# Usage: irm https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.ps1 | iex
 #
 # Flags (via environment variables):
 #   $env:OPENRAW_INSTALL_DIR = custom install directory
@@ -7,7 +7,7 @@
 
 $ErrorActionPreference = 'Stop'
 
-$Repo = "your-username/openraw"
+$Repo = "fdsfds3232/openraw"
 $DefaultInstallDir = Join-Path $env:USERPROFILE ".openraw\bin"
 $InstallDir = if ($env:OPENRAW_INSTALL_DIR) { $env:OPENRAW_INSTALL_DIR } else { $DefaultInstallDir }
 

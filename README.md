@@ -17,8 +17,8 @@ Open-source Agent OS built in Rust — 137K LOC · 14 crates · 1,767+ tests · 
 
 [![Rust](https://img.shields.io/badge/language-Rust-000000?style=flat-square&labelColor=000000&color=ffffff)](https://www.rust-lang.org/)
 [![MIT](https://img.shields.io/badge/license-MIT-000000?style=flat-square&labelColor=000000&color=ffffff)](LICENSE-MIT)
-[![v0.1.0](https://img.shields.io/badge/version-0.1.0-000000?style=flat-square&labelColor=000000&color=ffffff)](https://github.com/your-username/openraw/releases)
-[![Tests](https://img.shields.io/badge/tests-1%2C767%2B%20passing-000000?style=flat-square&labelColor=000000&color=ffffff)](https://github.com/your-username/openraw/actions)
+[![v0.1.0](https://img.shields.io/badge/version-0.1.0-000000?style=flat-square&labelColor=000000&color=ffffff)](https://github.com/fdsfds3232/openraw/releases)
+[![Tests](https://img.shields.io/badge/tests-1%2C767%2B%20passing-000000?style=flat-square&labelColor=000000&color=ffffff)](https://github.com/fdsfds3232/openraw/actions)
 
 </div>
 
@@ -26,7 +26,7 @@ Open-source Agent OS built in Rust — 137K LOC · 14 crates · 1,767+ tests · 
 
 > **v0.1.0 — First Release (March 2026)**
 >
-> OpenRaw is feature-complete but this is the first public release. You may encounter instability or breaking changes between minor versions. We ship fast and fix fast. [Report issues here.](https://github.com/your-username/openraw/issues)
+> OpenRaw is feature-complete but this is the first public release. You may encounter instability or breaking changes between minor versions. We ship fast and fix fast. [Report issues here.](https://github.com/fdsfds3232/openraw/issues)
 
 ---
 
@@ -35,7 +35,7 @@ Open-source Agent OS built in Rust — 137K LOC · 14 crates · 1,767+ tests · 
 **Linux / macOS**
 
 ```bash
-curl -sSf https://raw.githubusercontent.com/your-username/openraw/main/install.sh | sh
+curl -sSf https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.sh | sh
 openraw init
 openraw start
 # Dashboard → http://localhost:4200
@@ -44,7 +44,7 @@ openraw start
 **Windows (PowerShell)**
 
 ```powershell
-irm https://raw.githubusercontent.com/your-username/openraw/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.ps1 | iex
 openraw init
 openraw start
 ```
@@ -52,7 +52,7 @@ openraw start
 **From source**
 
 ```bash
-cargo install --git https://github.com/your-username/openraw openraw-cli
+cargo install --git https://github.com/fdsfds3232/openraw openraw-cli
 ```
 
 ---
@@ -245,7 +245,7 @@ openraw migrate --from openclaw --dry-run   # preview first
 When you clone the repo, you get everything — CLI, Desktop app, and all crates. One build produces both binaries:
 
 ```bash
-git clone https://github.com/your-username/openraw
+git clone https://github.com/fdsfds3232/openraw
 cd openraw
 cargo build --release
 ```
@@ -284,7 +284,7 @@ v0.1.0 is the first public release. Architecture is solid, test suite is compreh
 
 - Breaking changes may occur between minor versions until v1.0
 - Pin to a specific commit for production deployments
-- [Open an issue](https://github.com/your-username/openraw/issues) if you find an edge case
+- [Open an issue](https://github.com/fdsfds3232/openraw/issues) if you find an edge case
 
 ---
 

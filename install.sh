@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # OpenRaw installer — works on Linux, macOS, WSL
-# Usage: curl -sSf https://raw.githubusercontent.com/your-username/openraw/main/install.sh | sh
+# Usage: curl -sSf https://raw.githubusercontent.com/fdsfds3232/openraw/main/install.sh | sh
 #
 # Environment variables:
 #   OPENRAW_INSTALL_DIR  — custom install directory (default: ~/.openraw/bin)
@@ -8,7 +8,7 @@
 
 set -euo pipefail
 
-REPO="your-username/openraw"
+REPO="fdsfds3232/openraw"
 INSTALL_DIR="${OPENRAW_INSTALL_DIR:-$HOME/.openraw/bin}"
 
 detect_platform() {
