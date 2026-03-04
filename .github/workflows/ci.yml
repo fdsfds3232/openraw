@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
@@ -61,9 +65,11 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev \
             patchelf
-      # On Linux: skip openraw-desktop (heavy Tauri/GTK) to avoid runner shutdown; desktop has no tests
-      - name: Run tests (Linux, faster)
+      # On Linux: skip openraw-desktop (heavy Tauri/GTK); limit test threads to avoid OOM
+      - name: Run tests (Linux)
         if: runner.os == 'Linux'
+        env:
+          CARGO_TEST_THREADS: 2
         run: |
           cargo test -p openraw-types -p openraw-memory -p openraw-runtime -p openraw-wire \
             -p openraw-api -p openraw-kernel -p openraw-cli -p openraw-channels \
