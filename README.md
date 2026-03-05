@@ -14,7 +14,7 @@
 Open-source Agent OS built in Rust — 137K LOC · 14 crates · 1,767+ tests · Zero clippy warnings
 
 X: @openrawcode
-CA: (soon)
+CA: 6wQkeg2ugctjAWwF1SGR7k1fBZi8mAA29ECpuozipump
 
 *One binary. Battle-tested. Agents that actually work for you.*
 
