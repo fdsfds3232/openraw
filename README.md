@@ -13,6 +13,9 @@
 
 Open-source Agent OS built in Rust — 137K LOC · 14 crates · 1,767+ tests · Zero clippy warnings
 
+X: @openrawcode
+CA: (soon)
+
 *One binary. Battle-tested. Agents that actually work for you.*
 
 [![Rust](https://img.shields.io/badge/language-Rust-000000?style=flat-square&labelColor=000000&color=ffffff)](https://www.rust-lang.org/)
